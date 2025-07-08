@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Hứng Bóng - Cloud</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(#87ceeb, #ffffff);
+    }
+    canvas {
+      display: block;
+      background: #f0f8ff;
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #333;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    #instructions {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <div id="instructions">Use ← → or A D keys to move the cloud</div>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const cloudImg = new Image();
+    cloudImg.src = "https://fhevm-explorers.notion.site/image/attachment%3Ab6e9ef17-434d-46af-93ff-6623a7356267%3Acloud__1_.png?table=block&id=1ff14646-5d40-802b-ba48-d6f685a79192&spaceId=2402153e-4f34-4a63-b2c2-c14599ae2bc8&width=2000&userId=&cache=v2";
+
+    const cloud = {
+      x: canvas.width / 2 - 50,
+      y: canvas.height - 100,
+      width: 100,
+      height: 60,
+      speed: 20  // tăng tốc độ từ 10 lên 20
+    };
+
+    const ball = {
+      x: Math.random() * canvas.width,
+      y: 0,
+      radius: 15,
+      speed: 5
+    };
+
+    let score = 0;
+    let gameOver = false;
+
+    function drawCloud() {
+      if (cloudImg.complete) {
+        ctx.drawImage(cloudImg, cloud.x, cloud.y, cloud.width, cloud.height);
+      } else {
+        cloudImg.onload = () => {
+          ctx.drawImage(cloudImg, cloud.x, cloud.y, cloud.width, cloud.height);
+        };
+      }
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "red";
+      ctx.fill();
+      ctx.strokeStyle = "#800000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    function moveBall() {
+      ball.y += ball.speed;
+      if (
+        ball.y + ball.radius >= cloud.y &&
+        ball.x >= cloud.x &&
+        ball.x <= cloud.x + cloud.width
+      ) {
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+        resetBall();
+        ball.speed += 0.1;
+      } else if (ball.y > canvas.height) {
+        gameOver = true;
+        alert("Game Over! Score: " + score);
+        document.location.reload();
+      }
+    }
+
+    function resetBall() {
+      ball.x = Math.random() * canvas.width;
+      ball.y = 0;
+    }
+
+    function draw() {
+      if (gameOver) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCloud();
+      drawBall();
+      moveBall();
+      requestAnimationFrame(draw);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "arrowleft" || key === "a") {
+        cloud.x -= cloud.speed;
+        if (cloud.x < 0) cloud.x = 0;
+      }
+      if (key === "arrowright" || key === "d") {
+        cloud.x += cloud.speed;
+        if (cloud.x + cloud.width > canvas.width) {
+          cloud.x = canvas.width - cloud.width;
+        }
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cloud.x = Math.min(cloud.x, canvas.width - cloud.width);
+      cloud.y = canvas.height - 100;
+    });
+
+    draw();
+  </script>
+</body>
+</html>
